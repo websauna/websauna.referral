@@ -82,13 +82,20 @@ class ReferralProgramListing(adminviews.Listing):
     )
 
 
+def get_referral_program_url(request, resource):
+    obj = resource.get_object()
+    r = obj.referral_program
+    admin = Admin.get_admin(request.registry)
+    return admin.get_admin_object_url(request, r, "show")
+
+
 @view_overrides(context=ConversionAdmin)
 class ConversionListing(adminviews.Listing):
     """Listing view for shortened URLs."""
 
     table = listing.Table(
         columns = [
-            listing.Column("program", "Program", getter=lambda obj: obj.referral_program.slug),
+            listing.Column("program", "Program", getter=lambda obj: obj.referral_program.name, navigate_url_getter=get_referral_program_url),
             listing.Column("user", "User", getter=lambda obj: obj.user.friendly_name, navigate_url_getter=get_user_url),
             listing.Column("referrer", "Referrer"),
             listing.ControlsColumn()
