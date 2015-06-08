@@ -6,8 +6,10 @@ import transaction
 from websauna.referral import models
 
 
-def create_program(session):
+def create_program(session, user=None):
     r = models.ReferralProgram()
+    if user:
+        r.owner = user
     session.add(r)
     return r
 
@@ -163,3 +165,17 @@ def test_conversion_admin(browser, web_server, dbsession):
 
     # We should not be able to edit conversions
     assert not b.is_text_present("Edit")
+
+
+def test_program_owner(dbsession):
+    """Programs owner is recoreded correctly."""
+
+    with transaction.manager:
+        u = create_user(admin=True)
+        r = create_program(dbsession, user=u)
+
+    with transaction.manager:
+        r = DBSession.query(models.ReferralProgram).first()
+        u = get_user()
+        assert r.owner == u
+

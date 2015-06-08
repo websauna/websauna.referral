@@ -50,6 +50,9 @@ class ReferralProgram:
     slug = Column(String(6), unique=True, default=_generate_slug)
     hits = Column(Integer, default=0)
 
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
     @declared_attr
     def owner(cls):
         """The owner of this referral program.

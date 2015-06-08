@@ -47,6 +47,24 @@ class ReferralProgramEdit(adminviews.Edit):
         "slug"
     ]
 
+
+def get_user_url(request, resource):
+    obj = resource.get_object()
+    user = obj.user
+    admin = Admin.get_admin(request.registry)
+    return admin.get_admin_object_url(request, user, "show")
+
+
+
+def get_owner_url(request, resource):
+    obj = resource.get_object()
+    user = obj.owner
+    if user:
+        admin = Admin.get_admin(request.registry)
+        return admin.get_admin_object_url(request, user, "show")
+    else:
+        return None
+
 @view_overrides(context=ReferralProgramAdmin)
 class ReferralProgramListing(adminviews.Listing):
     """Listing view for shortened URLs."""
@@ -54,20 +72,14 @@ class ReferralProgramListing(adminviews.Listing):
     table = listing.Table(
         columns = [
             listing.Column("id", "Id",),
+            listing.Column("name", "Name"),
             listing.Column("slug", "Slug"),
-            listing.Column("owner", "Owner"),
+            listing.Column("owner", "Owner", getter=lambda obj: obj.owner and obj.owner.friendly_name or "", navigate_url_getter=get_owner_url),
             listing.Column("hits", "Hits"),
             listing.Column("converted", "Converted", getter=lambda obj: obj.get_converted_count()),
             listing.ControlsColumn()
         ]
     )
-
-
-def get_user_url(request, resource):
-    obj = resource.get_object()
-    user = obj.user
-    admin = Admin.get_admin(request.registry)
-    return admin.get_admin_object_url(request, user, "show")
 
 
 @view_overrides(context=ConversionAdmin)
