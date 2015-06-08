@@ -10,8 +10,7 @@ from sqlalchemy import (
     String, DateTime, ForeignKey)
 
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import relationship
-
+from sqlalchemy.orm import relationship, backref
 
 SLUG_CHARS = string.ascii_letters + string.ascii_letters.upper() + string.digits
 
@@ -69,6 +68,10 @@ class ReferralProgram:
         User = get_user_class(config.registry)
         return Column(Integer, ForeignKey('{}.id'.format(User.__tablename__)))
 
+    def get_converted_count(self):
+        """How many of the users who arrived through this referral program signed up."""
+        return DBSession.query(Conversion).filter_by(referral_program=self).count()
+
 
 class Conversion:
     """User who signed up through referral."""
@@ -79,12 +82,16 @@ class Conversion:
     referral_program_id = Column(Integer, ForeignKey('referral_program.id'))
     referral_program = relationship(ReferralProgram, backref="conversions")
 
+    #: The url where we captured this visitor initially
+    referrer = Column(String(512))
+
+    @declared_attr
     def user(cls):
         """The user who was converted."""
         from pyramid_web20.system.user.utils import get_user_class
         config = cls.metadata.pyramid_config
         User = get_user_class(config.registry)
-        return relationship(User, backref="referral_programs")
+        return relationship(User, backref=backref("conversion", uselist=False))
 
     @declared_attr
     def user_id(cls):
@@ -92,6 +99,37 @@ class Conversion:
         config = cls.metadata.pyramid_config
         User = get_user_class(config.registry)
         return Column(Integer, ForeignKey('{}.id'.format(User.__tablename__)))
+
+
+    @classmethod
+    def create_conversion(cls, user, session_data):
+        """Mark signed up user to have arrived from certain referral program.
+
+        :param session_data: Referral session data from the initial visitor catpure
+
+        :return: Created Conversion entry or none if referral data is empty or invalid
+        """
+
+        if not session_data:
+            return None
+
+        ref = session_data["ref"]
+        program = DBSession.query(ReferralProgram).filter_by(slug=ref).first()
+        if not program:
+            return None
+
+        c = Conversion()
+        c.user = user
+        c.referral_program = program
+
+        # Can be None too
+        referrer = session_data["referrer"] or ""
+        c.referrer = referrer[0:511]
+
+        DBSession.add(c)
+        return c
+
+
 
 
 #: For quick resolution if referrals

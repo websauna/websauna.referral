@@ -2,6 +2,9 @@ from urllib.parse import urlencode
 from pyramid.httpexceptions import HTTPTemporaryRedirect
 
 from . import config
+from . import models
+from pyramid_web20.system.model import DBSession
+
 
 class ReferralCookieTweenFactory:
     """Tween to capture referral links and """
@@ -23,6 +26,11 @@ class ReferralCookieTweenFactory:
                         "ref": ref,
                         "referrer": request.referrer,
                     }
+
+                    # Increase referral hit count
+                    program = DBSession.query(models.ReferralProgram).filter_by(slug=ref).first()
+                    if program:
+                        program.hits += 1
 
                 # Strip referer parameter from the query string, redirect user to the site.
                 # This possible mixes the order of the query string parameter, but we don't care about that now.

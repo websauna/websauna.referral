@@ -7,29 +7,18 @@ from pyramid_deform import CSRFSchema
 from pyramid_layout.panel import panel_config
 from pyramid_web20 import DBSession
 from pyramid_web20.system.core import messages
-from pyramid_web20.system.admin import views as adminviews
+from pyramid_web20.system.admin import views as adminviews, Admin
 from pyramid_web20.system.crud import listing
 
 import colander
 import deform
 
 from . import models
-from .admin import ReferralProgramAdmin
+from .admin import ReferralProgramAdmin, ConversionAdmin
 from websauna.viewconfig import view_overrides
 
 
 logger = logging.getLogger(__name__)
-
-
-class ReferralProgramSchema(CSRFSchema):
-    """A form to allow entering URL for shortening."""
-
-    #: An URL input using HTML5 <input type="url">
-    url = colander.SchemaNode(
-        colander.String(),
-        title='URL',
-        validator=colander.url,
-        widget=deform.widget.TextInputWidget(size=40, maxlength=512, template='url'))
 
 
 @view_overrides(context=ReferralProgramAdmin)
@@ -41,14 +30,12 @@ class ReferralProgramAdd(adminviews.Add):
     ]
 
 
-
-
 @view_overrides(context=ReferralProgramAdmin.Resource)
 class ReferralProgramShow(adminviews.Show):
     """Admin view for showing shortened URL."""
 
     #: Define what views we will show (deform readonly mode)
-    includes = ["id", "created_at", "owner", "slug", "url", "hits"]
+    includes = ["id", "created_at", "slug", "url", "hits"]
 
 
 @view_overrides(context=ReferralProgramAdmin.Resource)
@@ -61,7 +48,7 @@ class ReferralProgramEdit(adminviews.Edit):
     ]
 
 @view_overrides(context=ReferralProgramAdmin)
-class ReferralProgramLListing(adminviews.Listing):
+class ReferralProgramListing(adminviews.Listing):
     """Listing view for shortened URLs."""
 
     table = listing.Table(
@@ -70,6 +57,28 @@ class ReferralProgramLListing(adminviews.Listing):
             listing.Column("slug", "Slug"),
             listing.Column("owner", "Owner"),
             listing.Column("hits", "Hits"),
+            listing.Column("converted", "Converted", getter=lambda obj: obj.get_converted_count()),
+            listing.ControlsColumn()
+        ]
+    )
+
+
+def get_user_url(request, resource):
+    obj = resource.get_object()
+    user = obj.user
+    admin = Admin.get_admin(request.registry)
+    return admin.get_admin_object_url(request, user, "show")
+
+
+@view_overrides(context=ConversionAdmin)
+class ConversionListing(adminviews.Listing):
+    """Listing view for shortened URLs."""
+
+    table = listing.Table(
+        columns = [
+            listing.Column("program", "Program", getter=lambda obj: obj.referral_program.slug),
+            listing.Column("user", "User", getter=lambda obj: obj.user.friendly_name, navigate_url_getter=get_user_url),
+            listing.Column("referrer", "Referrer"),
             listing.ControlsColumn()
         ]
     )

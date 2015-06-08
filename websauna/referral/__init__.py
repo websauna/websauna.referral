@@ -24,6 +24,7 @@ def instrument_models(config):
 
     # Resolve @declared attr on Referral model
     instrument_declarative(models.ReferralProgram, Base._decl_class_registry, Base.metadata)
+    instrument_declarative(models.Conversion, Base._decl_class_registry, Base.metadata)
 
 
 def includeme(config):
@@ -39,6 +40,10 @@ def includeme(config):
 
     from . import adminviews
     config.scan(adminviews)
+
+    # Register event handlers
+    from . import subscribers
+    config.scan(subscribers)
 
 
 

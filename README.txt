@@ -1,7 +1,7 @@
 websauna.referral
 =====================
 
-*websauna.referral* is a *websauna* plugin to expand your site with referrals and affiliate functionality.
+*websauna.referral* is a *websauna* addonto expand your site with referrals and affiliate functionality.
 
 Features
 --------
@@ -15,7 +15,7 @@ Features
 Configuration
 -------------
 
-``websauna.referral.permacookie``: name of the cookie used to track incoming users
+``websauna.referral.query_parameter``: the name of query parameter which tracks the referral program slug. The default is ``ref``.
 
 Installation
 ------------
