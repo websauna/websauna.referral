@@ -1,0 +1,11 @@
+venv
+build/
+dist/
+*.pyc
+__pycache__
+*.egg
+*.egg-info
+*.log
+
+# Created by pytest-splinter for screenshots if not disabled by default
+websauna.referral.tests.*
