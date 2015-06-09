@@ -55,7 +55,6 @@ def get_user_url(request, resource):
     return admin.get_admin_object_url(request, user, "show")
 
 
-
 def get_owner_url(request, resource):
     obj = resource.get_object()
     user = obj.owner
@@ -64,6 +63,7 @@ def get_owner_url(request, resource):
         return admin.get_admin_object_url(request, user, "show")
     else:
         return None
+
 
 @view_overrides(context=ReferralProgramAdmin)
 class ReferralProgramListing(adminviews.Listing):
