@@ -9,7 +9,7 @@ with open(os.path.join(here, 'CHANGES.txt')) as f:
     CHANGES = f.read()
 
 requires = [
-    'pyramid_web20',
+    'websauna',
     ]
 
 setup(name='websauna.referral',

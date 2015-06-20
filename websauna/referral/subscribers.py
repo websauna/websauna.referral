@@ -1,5 +1,5 @@
 from pyramid.events import subscriber
-from pyramid_web20.system.user.events import FirstLogin
+from websauna.system.user.events import FirstLogin
 
 from . import models
 

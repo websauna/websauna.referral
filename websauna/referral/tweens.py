@@ -3,7 +3,7 @@ from pyramid.httpexceptions import HTTPTemporaryRedirect
 
 from . import config
 from . import models
-from pyramid_web20.system.model import DBSession
+from websauna.system.model import DBSession
 
 
 class ReferralCookieTweenFactory:

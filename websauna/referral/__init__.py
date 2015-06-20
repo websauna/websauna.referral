@@ -1,11 +1,11 @@
 """websauna.referral library initialization code."""
 import logging
 import pyramid
-from pyramid_web20.system.admin import Admin
+from websauna.system.admin import Admin
 
 from sqlalchemy.ext.declarative import instrument_declarative
 
-from pyramid_web20.system.model import Base
+from websauna.system.model import Base
 
 from . import models
 

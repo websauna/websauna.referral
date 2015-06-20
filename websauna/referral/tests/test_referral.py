@@ -1,6 +1,6 @@
 import time
-from pyramid_web20 import DBSession
-from pyramid_web20.tests.utils import create_user, EMAIL, PASSWORD, get_user
+from websauna.system.model import DBSession
+from websauna.tests.utils import create_user, EMAIL, PASSWORD, get_user
 import transaction
 
 from websauna.referral import models

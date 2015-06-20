@@ -1,6 +1,6 @@
 from pyramid.security import Allow, Everyone, Deny
 
-from pyramid_web20.system import admin
+from websauna.system import admin
 
 
 @admin.ModelAdmin.register(model='websauna.referral.models.ReferralProgram')

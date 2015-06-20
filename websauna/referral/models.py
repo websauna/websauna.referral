@@ -1,8 +1,8 @@
 import random
 import string
-from pyramid_web20.system.model import utc
-from pyramid_web20.system.model import now
-from pyramid_web20.system.model import DBSession
+from websauna.system.model import utc
+from websauna.system.model import now
+from websauna.system.model import DBSession
 from sqlalchemy import (
     Column,
     Index,
@@ -59,14 +59,14 @@ class ReferralProgram:
 
         If you do not like the default implementation, you can subclass ReferralProgram and then override ``owner`` and ``owner_id`` SQLALchemy declared attributes. Then you call ``instrument_declarative()`` to your custom model implementation, instead of the default ``ReferralProgram``.
         """
-        from pyramid_web20.system.user.utils import get_user_class
+        from websauna.system.user.utils import get_user_class
         config = cls.metadata.pyramid_config
         User = get_user_class(config.registry)
         return relationship(User, backref="referral_programs")
 
     @declared_attr
     def owner_id(cls):
-        from pyramid_web20.system.user.utils import get_user_class
+        from websauna.system.user.utils import get_user_class
         config = cls.metadata.pyramid_config
         User = get_user_class(config.registry)
         return Column(Integer, ForeignKey('{}.id'.format(User.__tablename__)))
@@ -91,14 +91,14 @@ class Conversion:
     @declared_attr
     def user(cls):
         """The user who was converted."""
-        from pyramid_web20.system.user.utils import get_user_class
+        from websauna.system.user.utils import get_user_class
         config = cls.metadata.pyramid_config
         User = get_user_class(config.registry)
         return relationship(User, backref=backref("conversion", uselist=False))
 
     @declared_attr
     def user_id(cls):
-        from pyramid_web20.system.user.utils import get_user_class
+        from websauna.system.user.utils import get_user_class
         config = cls.metadata.pyramid_config
         User = get_user_class(config.registry)
         return Column(Integer, ForeignKey('{}.id'.format(User.__tablename__)))

@@ -5,10 +5,10 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from pyramid_deform import CSRFSchema
 from pyramid_layout.panel import panel_config
-from pyramid_web20 import DBSession
-from pyramid_web20.system.core import messages
-from pyramid_web20.system.admin import views as adminviews, Admin
-from pyramid_web20.system.crud import listing
+from websauna.system.model import DBSession
+from websauna.system.core import messages
+from websauna.system.admin import views as adminviews, Admin
+from websauna.system.crud import listing
 
 import colander
 import deform
@@ -70,7 +70,7 @@ class ReferralProgramListing(adminviews.Listing):
     """Listing view for shortened URLs."""
 
     table = listing.Table(
-        columns = [
+        columns=[
             listing.Column("id", "Id",),
             listing.Column("name", "Name"),
             listing.Column("slug", "Slug"),
@@ -94,10 +94,11 @@ class ConversionListing(adminviews.Listing):
     """Listing view for shortened URLs."""
 
     table = listing.Table(
-        columns = [
+        columns=[
             listing.Column("program", "Program", getter=lambda obj: obj.referral_program.name, navigate_url_getter=get_referral_program_url),
             listing.Column("user", "User", getter=lambda obj: obj.user.friendly_name, navigate_url_getter=get_user_url),
             listing.Column("referrer", "Referrer"),
             listing.ControlsColumn()
         ]
     )
+g

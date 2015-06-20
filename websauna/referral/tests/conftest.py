@@ -1,1 +1,1 @@
-from pyramid_web20.tests.conftest import *  # noqa
+from websauna.tests.conftest import *  # noqa

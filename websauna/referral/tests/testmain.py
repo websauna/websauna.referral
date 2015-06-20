@@ -4,17 +4,16 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.events import BeforeRender
 from pyramid.settings import asbool
 from pyramid_deform import configure_zpt_renderer
-import pyramid_web20
-import pyramid_web20.system.user.views as user_views
-from pyramid_web20.system.admin import Admin
 
-
-from pyramid_web20.utils.configincluder import IncludeAwareConfigParser
+import websauna.system
+import websauna.system.user.views as user_views
+from websauna.system.admin import Admin
+from websauna.utils.configincluder import IncludeAwareConfigParser
 
 from sqlalchemy.orm.exc import DetachedInstanceError
 
 
-class Initializer(pyramid_web20.Initializer):
+class Initializer(websauna.system.Initializer):
     """An initialization configuration used when testing websauna.referral."""
 
     def configure_instrumented_models(self, settings):
