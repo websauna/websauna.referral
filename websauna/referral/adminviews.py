@@ -101,4 +101,3 @@ class ConversionListing(adminviews.Listing):
             listing.ControlsColumn()
         ]
     )
-g
