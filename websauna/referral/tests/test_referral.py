@@ -8,6 +8,7 @@ from websauna.referral import models
 
 def create_program(session, user=None):
     r = models.ReferralProgram()
+    r.name = "Foobar program"
     if user:
         r.owner = user
     session.add(r)
@@ -15,7 +16,7 @@ def create_program(session, user=None):
 
 
 def register(browser, web_server):
-
+    """Sign up a user through web workflow."""
     b = browser
 
     b.click_link_by_text("Sign up")
@@ -83,7 +84,6 @@ def test_multiple_query_parameters(browser, web_server, dbsession, app):
     assert str(b.url) in (web_server + "/?foo=bar&blarg=faa", web_server + "/?blarg=faa&foo=bar")
 
 
-
 def test_convert(browser, web_server, dbsession):
     """Referral program permacookie is set on the user if he/she arrives from referral program link.."""
     with transaction.manager:
@@ -105,9 +105,19 @@ def test_convert(browser, web_server, dbsession):
 
 
 def test_blank_user_sign_up(browser, web_server, dbsession):
-    """See that including referral tweens do not break ordinate sign up process."""
+    """Non-referral user sign ups have their original HTTP referer recorded."""
+
+    # XXX: For some reason, Referer is dropped for this redirect request
+    # Shortened localhost:6543
+    # browser.visit("http://goo.gl/Md1PDs")#
+
     browser.visit(web_server)
     register(browser, web_server)
+
+    with transaction.manager:
+        assert DBSession.query(models.Conversion).count() == 1
+        c = DBSession.query(models.Conversion).first()
+        assert c.referrer is None
 
 
 def test_referral_admin(browser, web_server, dbsession):
@@ -148,8 +158,18 @@ def test_conversion_admin(browser, web_server, dbsession):
     with transaction.manager:
         r = create_program(dbsession)
         u = create_user(admin=True)
-        models.Conversion.create_conversion(u, dict(referrer="http://foo.bar", ref=r.slug))
 
+        DBSession.flush()
+
+        # Create sample conversions
+        c = models.Conversion.create_conversion(u, dict(referrer="http://foo.bar", ref=r.slug))
+        # models.Conversion.create_conversion(u, dict(referrer="http://example.com", ref=None))
+        slug = r.slug
+
+    with transaction.manager:
+        c = DBSession.query(models.Conversion).first()
+        assert c.user_id
+        assert c.referral_program
 
     b = browser
     b.visit(web_server + "/login")
@@ -162,6 +182,9 @@ def test_conversion_admin(browser, web_server, dbsession):
 
     # Conversion source is visible in the listing
     assert b.is_text_present("http://foo.bar")
+
+    # Check referral program id is present for the first conversion
+    assert b.is_text_present("Foobar program")
 
     # We should not be able to edit conversions
     assert not b.is_text_present("Edit")
@@ -178,4 +201,3 @@ def test_program_owner(dbsession):
         r = DBSession.query(models.ReferralProgram).first()
         u = get_user()
         assert r.owner == u
-

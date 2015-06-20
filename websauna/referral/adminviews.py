@@ -85,9 +85,12 @@ class ReferralProgramListing(adminviews.Listing):
 def get_referral_program_url(request, resource):
     obj = resource.get_object()
     r = obj.referral_program
+    if not r:
+        return None
     admin = Admin.get_admin(request.registry)
     return admin.get_admin_object_url(request, r, "show")
 
+import ipdb
 
 @view_overrides(context=ConversionAdmin)
 class ConversionListing(adminviews.Listing):
@@ -95,8 +98,8 @@ class ConversionListing(adminviews.Listing):
 
     table = listing.Table(
         columns=[
-            listing.Column("program", "Program", getter=lambda obj: obj.referral_program.name, navigate_url_getter=get_referral_program_url),
-            listing.Column("user", "User", getter=lambda obj: obj.user.friendly_name, navigate_url_getter=get_user_url),
+            listing.Column("program", "Program", getter=lambda obj: obj.referral_program and obj.referral_program.name or "", navigate_url_getter=get_referral_program_url),
+            listing.Column("user", "User", getter=lambda obj: obj.user.friendly_name if obj.user else ipdb.set_trace(), navigate_url_getter=get_user_url),
             listing.Column("referrer", "Referrer"),
             listing.ControlsColumn()
         ]

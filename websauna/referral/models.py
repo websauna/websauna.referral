@@ -82,11 +82,19 @@ class Conversion:
     __tablename__ = 'referral_conversion'
 
     id = Column(Integer, primary_key=True)
-    referral_program_id = Column(Integer, ForeignKey('referral_program.id'))
+    referral_program_id = Column(Integer, ForeignKey('referral_program.id'), nullable=True)
     referral_program = relationship(ReferralProgram, backref="conversions")
 
     #: The url where we captured this visitor initially
     referrer = Column(String(512))
+
+    @declared_attr
+    def user_id(cls):
+        """Foreign key to the users table."""
+        from websauna.system.user.utils import get_user_class
+        config = cls.metadata.pyramid_config
+        User = get_user_class(config.registry)
+        return Column(Integer, ForeignKey('{}.id'.format(User.__tablename__)), nullable=False, unique=True)
 
     @declared_attr
     def user(cls):
@@ -94,15 +102,12 @@ class Conversion:
         from websauna.system.user.utils import get_user_class
         config = cls.metadata.pyramid_config
         User = get_user_class(config.registry)
-        return relationship(User, backref=backref("conversion", uselist=False))
+        return relationship(User, foreign_keys=[Conversion.user_id], backref=backref("conversion", uselist=False))
 
-    @declared_attr
-    def user_id(cls):
-        from websauna.system.user.utils import get_user_class
-        config = cls.metadata.pyramid_config
-        User = get_user_class(config.registry)
-        return Column(Integer, ForeignKey('{}.id'.format(User.__tablename__)))
-
+    @classmethod
+    def is_converted(cls, user):
+        """Make sure the user do not get two conversions."""
+        return DBSession.query(Conversion).filter(Conversion.user_id == user.id).first() is not None
 
     @classmethod
     def create_conversion(cls, user, session_data):
@@ -113,21 +118,30 @@ class Conversion:
         :return: Created Conversion entry or none if referral data is empty or invalid
         """
 
+        assert user, "No user"
+        assert user.id, "Not a valid user"
+
         if not session_data:
             return None
 
         ref = session_data["ref"]
-        program = DBSession.query(ReferralProgram).filter_by(slug=ref).first()
-        if not program:
-            return None
+        if ref:
+            program = DBSession.query(ReferralProgram).filter_by(slug=ref).first()
+        else:
+            program = None
 
         c = Conversion()
-        c.user = user
+
+        # XXX: test_conversion_admin fails inside transaction machinery if this is set by using relationship(). One must do forced id set here. No idea why.
+        c.user_id = user.id
         c.referral_program = program
 
         # Can be None too
-        referrer = session_data["referrer"] or ""
-        c.referrer = referrer[0:511]
+        referrer = session_data["referrer"]
+        if referrer:
+            c.referrer = referrer[0:511]
+        else:
+            c.referrer = None
 
         DBSession.add(c)
         return c

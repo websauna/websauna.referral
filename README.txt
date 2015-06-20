@@ -6,11 +6,11 @@ websauna.referral
 Features
 --------
 
-* System-created or user created referral programs
+* System-created or user created referral programs (affiliates)
 
-* All who have admin view access can shorten URLs
+* Have statistics how well referral programs are going
 
-* Count hits per URL
+* Record HTTP referer for all incoming visitors and converted sign ups
 
 Configuration
 -------------
