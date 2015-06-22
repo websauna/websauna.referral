@@ -10,7 +10,14 @@ Features
 
 * Have statistics how well referral programs are going
 
-* Record HTTP referer for all incoming visitors and converted sign ups
+* Record HTTP referer for all incoming visitors and converted sign up
+
+TODO
+----
+
+* Fix initial migration [need to be done before the release]
+
+* Write installation instructions with migration
 
 Configuration
 -------------
