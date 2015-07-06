@@ -1,3 +1,3 @@
 from websauna.system.devop import alembic
 
-alembic.run_alembic(package="websauna.referral")
+alembic.run_alembic(package="trees")
