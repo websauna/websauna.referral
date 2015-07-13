@@ -8,6 +8,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String, DateTime, ForeignKey)
+from sqlalchemy import Enum
 
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship, backref
@@ -42,6 +43,11 @@ class ReferralProgram:
 
     id = Column(Integer, primary_key=True)
     name = Column(String(64), default="")
+
+    #: Internal is an affiliate program created through site admin
+    #: Referral is "share to your friends" type of program
+    #: Affiliate is revenue sharing program as a self-subscription service
+    program_type = Column(Enum('internal', 'referral', 'affiliate', name="referral_program_type"), default="referral")
 
     created_at = Column(DateTime(timezone=utc), default=now)
     updated_at = Column(DateTime(timezone=utc), onupdate=now)
@@ -84,6 +90,9 @@ class Conversion:
     id = Column(Integer, primary_key=True)
     referral_program_id = Column(Integer, ForeignKey('referral_program.id'), nullable=True)
     referral_program = relationship(ReferralProgram, backref="conversions")
+
+    #: If this affiliate is paid one, when this lead was credited to our affiliate partner
+    paid_at = Column(DateTime(timezone=utc), nullable=True, default=None)
 
     #: The url where we captured this visitor initially
     referrer = Column(String(512))

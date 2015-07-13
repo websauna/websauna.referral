@@ -25,9 +25,18 @@ logger = logging.getLogger(__name__)
 class ReferralProgramAdd(adminviews.Add):
     """Admin view for editing shortened URL."""
 
+    # We only ask for name field, everything else is filled by system
     includes = [
         "name"
     ]
+
+    def create_object(self):
+        """When created through admin, all referral programs are internal type by default."""
+        model = self.get_model()
+        item = model()
+        item.program_type = "internal"
+        return item
+
 
 
 @view_overrides(context=ReferralProgramAdmin.Resource)
@@ -35,7 +44,7 @@ class ReferralProgramShow(adminviews.Show):
     """Admin view for showing shortened URL."""
 
     #: Define what views we will show (deform readonly mode)
-    includes = ["id", "created_at", "slug", "url", "hits"]
+    includes = ["id", "program_type", "created_at", "slug", "url", "hits"]
 
 
 @view_overrides(context=ReferralProgramAdmin.Resource)
@@ -44,7 +53,8 @@ class ReferralProgramEdit(adminviews.Edit):
 
     includes = [
         "url",
-        "slug"
+        "slug",
+        "program_type"
     ]
 
 
@@ -90,7 +100,7 @@ def get_referral_program_url(request, resource):
     admin = Admin.get_admin(request.registry)
     return admin.get_admin_object_url(request, r, "show")
 
-import ipdb
+
 
 @view_overrides(context=ConversionAdmin)
 class ConversionListing(adminviews.Listing):
@@ -99,7 +109,7 @@ class ConversionListing(adminviews.Listing):
     table = listing.Table(
         columns=[
             listing.Column("program", "Program", getter=lambda obj: obj.referral_program and obj.referral_program.name or "", navigate_url_getter=get_referral_program_url),
-            listing.Column("user", "User", getter=lambda obj: obj.user.friendly_name if obj.user else ipdb.set_trace(), navigate_url_getter=get_user_url),
+            listing.Column("user", "User", getter=lambda obj: obj.user.friendly_name if obj.user else "", navigate_url_getter=get_user_url),
             listing.Column("referrer", "Referrer"),
             listing.ControlsColumn()
         ]

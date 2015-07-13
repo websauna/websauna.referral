@@ -1,6 +1,7 @@
 import time
+import pytest
 from websauna.system.model import DBSession
-from websauna.tests.utils import create_user, EMAIL, PASSWORD, get_user
+from websauna.tests.utils import create_user, EMAIL, PASSWORD, get_user, login
 import transaction
 
 from websauna.referral import models
@@ -123,15 +124,11 @@ def test_blank_user_sign_up(browser, web_server, dbsession):
 def test_referral_admin(browser, web_server, dbsession):
     """Admin interface allows us to add and list referrals."""
 
+    b = browser
     with transaction.manager:
         u = create_user(admin=True)
 
-    b = browser
-    b.visit(web_server + "/login")
-
-    b.fill("username", EMAIL)
-    b.fill("password", PASSWORD)
-    b.find_by_name("Log_in").click()
+    login(web_server, browser)
 
     assert b.is_element_visible_by_css("#nav-admin")
 
@@ -145,6 +142,8 @@ def test_referral_admin(browser, web_server, dbsession):
     with transaction.manager:
         r = DBSession.query(models.ReferralProgram).first()
         slug = r.slug
+        # Program created through admin should internal referral programs
+        assert r.program_type == "internal"
 
     # See the listing does not broken out
     b.visit(web_server + "/admin/referrals/listing")
@@ -201,3 +200,26 @@ def test_program_owner(dbsession):
         r = DBSession.query(models.ReferralProgram).first()
         u = get_user()
         assert r.owner == u
+
+
+@pytest.mark.skipif(True, "colanderalchemy does not have support for enum choices")
+def test_change_program_type(browser, web_server, dbsession):
+    """We can change the referral program type in admin.."""
+
+    b = browser
+    with transaction.manager:
+        u = create_user(admin=True)
+
+    login(web_server, browser)
+
+    assert b.is_element_visible_by_css("#nav-admin")
+
+    b.visit(web_server + "/admin/referrals/add")
+
+    b.fill("name", "foobar")
+    b.find_by_name("add").click()
+
+    assert b.is_text_present("Slug")
+
+    # See the listing does not broken out
+    b.visit(web_server + "/admin/referrals/1/edit")
